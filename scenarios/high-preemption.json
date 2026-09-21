@@ -1,0 +1,7 @@
+{
+  "host_types": {
+    "spot-m":     {"cpu": 32, "mem_gb": 128, "price_per_hr": 0.90, "preemptible": true,  "reclaim_warn_sec": 60, "preempt_rate_per_hr": 0.25, "net_gbps": 10},
+    "spot-l":     {"cpu": 64, "mem_gb": 256, "price_per_hr": 1.70, "preemptible": true,  "reclaim_warn_sec": 60, "preempt_rate_per_hr": 0.25, "net_gbps": 25},
+    "ondemand-m": {"cpu": 32, "mem_gb": 128, "price_per_hr": 2.60, "preemptible": false, "reclaim_warn_sec": 0,  "preempt_rate_per_hr": 0,    "net_gbps": 10}
+  }
+}

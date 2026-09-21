@@ -114,7 +114,3 @@ func writeFile(path string, write func(*os.File) error) error {
 	}
 	return f.Close()
 }
-
-func cmdCompare(args []string) error {
-	return fmt.Errorf("compare: not implemented yet")
-}

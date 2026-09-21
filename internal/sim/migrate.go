@@ -153,6 +153,10 @@ func (w *World) handleMigrationStop(e *MigrationStop) {
 		return
 	}
 	b := w.boxes[m.box]
+	if b.HostID != m.from || (b.State != fleet.BoxActive && b.State != fleet.BoxSleeping) {
+		w.migs.cancelWhere(w, func(x *migration) bool { return x == m })
+		return
+	}
 	b.Advance(w.now, w.model.Box)
 	b.StartMigrationDowntime()
 	b.Epoch++ // pause the phase clock; timers are re-armed on completion
@@ -178,12 +182,23 @@ func (w *World) handleMigrationDone(e *MigrationDone) {
 }
 
 // cancelTouching aborts every migration with host h as an endpoint. A box
-// whose destination died resumes on its source; a box whose source died is
-// about to be Lost by the caller.
+// whose source died is about to be Lost by the caller.
 func (ms *migrations) cancelTouching(w *World, h fleet.HostID) {
+	ms.cancelWhere(w, func(m *migration) bool { return m.from == h || m.to == h })
+}
+
+// cancelIncoming aborts migrations heading into h, used when h starts
+// draining: landing a box on a doomed host only sets it up to be lost.
+func (ms *migrations) cancelIncoming(w *World, h fleet.HostID) {
+	ms.cancelWhere(w, func(m *migration) bool { return m.to == h })
+}
+
+// cancelWhere drops matching migrations. A box that was already paused for
+// its final copy resumes where it was.
+func (ms *migrations) cancelWhere(w *World, match func(*migration) bool) {
 	keep := ms.queued[:0]
 	for _, m := range ms.queued {
-		if m.from == h || m.to == h {
+		if match(m) {
 			delete(ms.byBox, m.box)
 			continue
 		}
@@ -191,12 +206,12 @@ func (ms *migrations) cancelTouching(w *World, h fleet.HostID) {
 	}
 	ms.queued = keep
 	for _, m := range ms.sortedActive() {
-		if m.from != h && m.to != h {
+		if !match(m) {
 			continue
 		}
 		delete(ms.active, m.id)
 		delete(ms.byBox, m.box)
-		if b := w.boxes[m.box]; m.to == h && b.State == fleet.BoxMigrating {
+		if b := w.boxes[m.box]; b.State == fleet.BoxMigrating {
 			b.AbortMigrationDowntime()
 			w.scheduleTimers(b)
 		}

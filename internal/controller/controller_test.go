@@ -114,28 +114,30 @@ func TestGreedyHotHostMovesBestRatio(t *testing.T) {
 	if len(plan.Migrations) != 1 || plan.Migrations[0].Box != "box-b" || plan.Migrations[0].To != "spot-m-003" {
 		t.Fatalf("plan = %+v, want box-b -> spot-m-003 (most room)", plan)
 	}
-	if len(plan.ShutdownHosts) != 0 || len(plan.LaunchHosts) != 0 {
-		t.Fatalf("unexpected fleet changes: %+v", plan)
+	// Room (0+60+80) is below the reserve needed to evacuate host 1 (152),
+	// so the tick also asks for the cheapest host per GB.
+	if len(plan.ShutdownHosts) != 0 || len(plan.LaunchHosts) != 1 || plan.LaunchHosts[0] != "spot-l" {
+		t.Fatalf("expected a reserve launch and no drain: %+v", plan)
 	}
 }
 
 func TestGreedyDrainsColdHostAndLaunchesForPending(t *testing.T) {
 	g := NewGreedy(config.Default().Controller)
 	v := view(
-		host("spot-m-001", 128, 0.9, box("box-a", 20, 60, 0, 0)),
-		host("spot-m-002", 128, 0.9, box("box-b", 20, 5, 0, 0)), // 4% used
+		host("spot-l-001", 256, 1.7, box("box-a", 20, 60, 0, 0)), // 192 GB room
+		host("spot-m-002", 128, 0.9, box("box-b", 20, 5, 0, 0)),  // 4% used
 	)
 	plan := g.Tick(v, 1000)
 	if len(plan.ShutdownHosts) != 1 || plan.ShutdownHosts[0] != "spot-m-002" {
 		t.Fatalf("expected spot-m-002 to be drained, got %+v", plan)
 	}
-	if len(plan.Migrations) != 1 || plan.Migrations[0].Box != "box-b" || plan.Migrations[0].To != "spot-m-001" {
-		t.Fatalf("expected box-b moved to spot-m-001, got %+v", plan.Migrations)
+	if len(plan.Migrations) != 1 || plan.Migrations[0].Box != "box-b" || plan.Migrations[0].To != "spot-l-001" {
+		t.Fatalf("expected box-b moved to spot-l-001, got %+v", plan.Migrations)
 	}
 
 	// With a box pending that fits nowhere, no draining and a launch instead.
 	v.Pending = []BoxView{box("huge", 100, 0, 0, 0)}
-	v.Pending[0].ObsMemGB = 120
+	v.Pending[0].ObsMemGB = 200
 	v.Pending[0].State = fleet.BoxActive
 	plan = g.Tick(v, 1000)
 	if len(plan.ShutdownHosts) != 0 || len(plan.LaunchHosts) != 1 || plan.LaunchHosts[0] != "spot-l" {

@@ -1,0 +1,14 @@
+{
+  "box_arrival": {
+    "stop_after_sec": 129600,
+    "rate_schedule": [
+      {"until_sec": 21600,  "rate_per_hr": 15},
+      {"until_sec": 25200,  "rate_per_hr": 120},
+      {"until_sec": 64800,  "rate_per_hr": 15},
+      {"until_sec": 68400,  "rate_per_hr": 120},
+      {"until_sec": 108000, "rate_per_hr": 15},
+      {"until_sec": 111600, "rate_per_hr": 120},
+      {"until_sec": 129600, "rate_per_hr": 15}
+    ]
+  }
+}

@@ -226,3 +226,55 @@ func TestPendingBoxPlacedWhenReplacementBoots(t *testing.T) {
 		t.Fatalf("host=%s pending=%d launched=%d", b.HostID, s.PendingBoxSeconds, s.HostsLaunched)
 	}
 }
+
+func TestBoxFinishingDuringPreCopyCancelsMigration(t *testing.T) {
+	cfg := quietScenario()
+	cfg.DurationSec = 3000
+	w, b := testWorld(t, cfg, scripted{place: placeOn("spot-m-001")})
+	// One 1000 s active phase; a migration started at 995 s has ~50 GB to
+	// copy at 0.1 GB/s, so the box completes long before the final copy.
+	b.Phases = b.Phases[:1]
+	b.LifeSec = 1000
+	w.ctl = scripted{
+		place: placeOn("spot-m-001"),
+		tick: func(v controller.FleetView, now int64) controller.Plan {
+			if now != 995 {
+				return controller.Plan{}
+			}
+			return controller.Plan{Migrations: []controller.Migration{{Box: b.ID, To: "spot-m-002"}}}
+		},
+	}
+	w.q.push(&ControllerTick{at(995)})
+	w.q.push(&HostDead{timing: at(2000), Host: "spot-m-002"})
+	w.loop()
+	s := w.result().Summary
+	if b.State != fleet.BoxDone || b.WorkDoneSec != 1000 || s.MigrationsTotal != 0 || s.BoxesLostEvents != 0 {
+		t.Fatalf("state=%v work=%d summary=%+v", b.State, b.WorkDoneSec, s)
+	}
+	if len(w.hosts["spot-m-002"].Boxes) != 0 {
+		t.Fatal("finished box must not be delivered to the destination")
+	}
+}
+
+func TestMigrationDuringWakeDelayStillWakes(t *testing.T) {
+	cfg := quietScenario()
+	cfg.DurationSec = 2050 // stop inside the final 100 s active phase
+	w, b := testWorld(t, cfg, scripted{place: placeOn("spot-m-001")})
+	// The wait phase ends at t=2000 (1000 active + 1000 wait); the wake
+	// delay runs 2000-2002. A sleeping box migrates in ~5 s, so a move
+	// submitted at 2000 pauses the box inside its wake delay.
+	w.ctl = scripted{
+		place: placeOn("spot-m-001"),
+		tick: func(v controller.FleetView, now int64) controller.Plan {
+			if now != 2000 {
+				return controller.Plan{}
+			}
+			return controller.Plan{Migrations: []controller.Migration{{Box: b.ID, To: "spot-m-002"}}}
+		},
+	}
+	w.q.push(&ControllerTick{at(2000)})
+	w.loop()
+	if b.State != fleet.BoxActive || b.HostID != "spot-m-002" || b.WorkDoneSec <= 1000 {
+		t.Fatalf("box should be awake and working on host 2: state=%v host=%s work=%d", b.State, b.HostID, b.WorkDoneSec)
+	}
+}

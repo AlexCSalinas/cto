@@ -73,6 +73,12 @@ func (w *World) tryPlace(v controller.FleetView, b *fleet.Box) bool {
 // from its current phase clock, invalidating any earlier ones.
 func (w *World) scheduleTimers(b *fleet.Box) {
 	b.Epoch++
+	if b.State == fleet.BoxSleeping && b.Phase().Kind == fleet.PhaseActive {
+		// Asleep in an Active phase means the box was inside its wake delay
+		// when a migration paused it; restart the delay.
+		w.q.push(&BoxWake{timing: at(w.now + w.cfg.WakeDelaySec), Box: b.ID, Epoch: b.Epoch})
+		return
+	}
 	w.q.push(&PhaseEnd{timing: at(w.now + b.PhaseLeftSec), Box: b.ID, Epoch: b.Epoch})
 	if b.State == fleet.BoxActive && b.Phase().Kind == fleet.PhaseWaiting {
 		if in := b.SleepIn(w.model.Box); in < b.PhaseLeftSec {
@@ -127,5 +133,9 @@ func (w *World) finishBox(b *fleet.Box) {
 	b.HostID = ""
 	b.State = fleet.BoxDone
 	w.m.Completed()
+	// A box can finish while its pre-copy is still streaming; the move is
+	// pointless now and must not deliver a finished box to the destination.
+	w.migs.cancelWhere(w, func(m *migration) bool { return m.box == b.ID })
 	w.retireIfEmpty(h)
+	w.startMigrations()
 }

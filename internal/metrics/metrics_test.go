@@ -100,3 +100,20 @@ func abs(x float64) float64 {
 	}
 	return x
 }
+
+func TestStats(t *testing.T) {
+	if s := NewStat(nil); s.Mean != 0 || s.Stddev != 0 {
+		t.Errorf("empty stat = %+v", s)
+	}
+	if s := NewStat([]float64{4}); s.Mean != 4 || s.Stddev != 0 {
+		t.Errorf("single stat = %+v", s)
+	}
+	s := NewStat([]float64{2, 4, 4, 4, 5, 5, 7, 9})
+	if s.Mean != 5 || abs(s.Stddev-2.138089935) > 1e-6 {
+		t.Errorf("stat = %+v, want mean 5 sample stddev 2.138", s)
+	}
+	agg := Aggregate([]Summary{{TotalCostUSD: 10, LostWorkSec: 3}, {TotalCostUSD: 20, LostWorkSec: 5}})
+	if agg["total_cost_usd"].Mean != 15 || agg["lost_work_sec"].Mean != 4 {
+		t.Errorf("aggregate = %+v", agg)
+	}
+}

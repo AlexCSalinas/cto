@@ -143,12 +143,19 @@ func (g *Greedy) Tick(v FleetView, now int64) Plan {
 			booting++
 		}
 	}
-	// Boxes that fit nowhere need a new host; one launch per tick is enough
-	// because the next tick sees it booting.
-	if len(v.Pending) > 0 && booting == 0 {
+	// Boxes that fit nowhere need a new host, and so does a fleet without
+	// room to absorb its fullest spot host: a reclaim warning is shorter
+	// than a boot, so the slack has to exist before the warning. One launch
+	// per tick is enough because the next tick sees it booting.
+	room, reserve := g.totalRoom(v, rooms), g.evacuationReserve(v)
+	switch {
+	case booting > 0:
+	case len(v.Pending) > 0:
 		if _, ok := g.pick(v, rooms, v.Pending[0], "", true); !ok {
 			plan.LaunchHosts = append(plan.LaunchHosts, g.launchType(v, v.Pending[0]))
 		}
+	case room < reserve:
+		plan.LaunchHosts = append(plan.LaunchHosts, g.launchType(v, BoxView{}))
 	}
 	for _, h := range v.Hosts {
 		switch {
@@ -169,7 +176,7 @@ func (g *Greedy) Tick(v FleetView, now int64) Plan {
 			}
 		}
 	}
-	if h, ok := g.coldHost(v, rooms, budget, booting); ok {
+	if h, ok := g.coldHost(v, rooms, budget, booting, room-reserve); ok {
 		for _, b := range h.Boxes {
 			to, _ := g.pick(v, rooms, b, h.ID, true)
 			move(b, h, to)
@@ -200,11 +207,42 @@ func (g *Greedy) relief(v FleetView, rooms map[fleet.HostID]*room, h HostView, b
 	return best, dest, bestScore > 0
 }
 
+// totalRoom is the spare capacity across running hosts.
+func (g *Greedy) totalRoom(v FleetView, rooms map[fleet.HostID]*room) float64 {
+	total := 0.0
+	for _, h := range v.Hosts {
+		if h.State == fleet.HostRunning {
+			total += math.Max(0, rooms[h.ID].mem)
+		}
+	}
+	return total
+}
+
+// evacuationReserve is the room needed to re-home every box on the fullest
+// running preemptible host, i.e. the slack that makes a reclaim survivable.
+func (g *Greedy) evacuationReserve(v FleetView) float64 {
+	reserve := 0.0
+	for _, h := range v.Hosts {
+		if h.State != fleet.HostRunning || !h.Preemptible {
+			continue
+		}
+		load := 0.0
+		for _, b := range h.Boxes {
+			m, _ := g.demand(b)
+			load += m
+		}
+		reserve = math.Max(reserve, load)
+	}
+	return reserve
+}
+
 // coldHost finds one under-used running host whose boxes all fit elsewhere,
 // provided nothing is pending or booting and no other host is already being
 // retired, so consolidation never races against a scale-up. Hosts with
-// migrations in flight or planned this tick are left alone.
-func (g *Greedy) coldHost(v FleetView, rooms map[fleet.HostID]*room, budget map[fleet.HostID]int, booting int) (HostView, bool) {
+// migrations in flight or planned this tick are left alone, and a drain
+// must leave at least slack GB of room (the evacuation reserve); removing a
+// host costs exactly its capacity in room.
+func (g *Greedy) coldHost(v FleetView, rooms map[fleet.HostID]*room, budget map[fleet.HostID]int, booting int, slack float64) (HostView, bool) {
 	running := 0
 	for _, h := range v.Hosts {
 		if h.State == fleet.HostDraining && h.DeadlineAt == 0 {
@@ -221,7 +259,7 @@ func (g *Greedy) coldHost(v FleetView, rooms map[fleet.HostID]*room, budget map[
 		if h.State != fleet.HostRunning || h.ObsMemGB >= g.cfg.ColdThreshold*h.MemGB {
 			continue
 		}
-		if budget[h.ID] != v.Model.Migration.MaxConcurrentPerHost {
+		if budget[h.ID] != v.Model.Migration.MaxConcurrentPerHost || h.MemGB > slack {
 			continue
 		}
 		if len(h.Boxes) > v.Model.Migration.MaxConcurrentPerHost {
