@@ -1,0 +1,21 @@
+{
+  "seed_default": 42,
+  "duration_sec": 172800,
+  "host_types": {
+    "spot-m":     {"cpu": 32, "mem_gb": 128, "price_per_hr": 0.90, "preemptible": true,  "reclaim_warn_sec": 120, "preempt_rate_per_hr": 0.05, "net_gbps": 10},
+    "spot-l":     {"cpu": 64, "mem_gb": 256, "price_per_hr": 1.70, "preemptible": true,  "reclaim_warn_sec": 120, "preempt_rate_per_hr": 0.05, "net_gbps": 25},
+    "ondemand-m": {"cpu": 32, "mem_gb": 128, "price_per_hr": 2.60, "preemptible": false, "reclaim_warn_sec": 0,   "preempt_rate_per_hr": 0,    "net_gbps": 10}
+  },
+  "initial_fleet": {"spot-m": 6, "spot-l": 2},
+  "max_hosts": 20,
+  "host_boot_sec": 60,
+  "box_arrival": {"rate_per_hr": 30, "stop_after_sec": 129600},
+  "sleep_grace_sec": 5,
+  "wake_delay_sec": 2,
+  "resident_floor_gb": 0.25,
+  "mem_ramp_gb_per_sec": 0.5,
+  "checkpoint_interval_sec": 600,
+  "migration": {"fixed_downtime_sec": 2, "downtime_fraction": 0.2, "max_concurrent_per_host": 2},
+  "controller": {"headroom_frac": 0.2, "hot_threshold": 0.9, "cold_threshold": 0.25, "tick_interval_sec": 60},
+  "sample_interval_sec": 60
+}
