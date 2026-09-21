@@ -94,12 +94,12 @@ func (w *World) handleReclaimWarning(e *ReclaimWarning) {
 	h.State = fleet.HostDraining
 	h.DeadlineAt = e.Deadline
 	w.m.HostPreempted()
-	if w.retireIfEmpty(h) {
-		return
-	}
+	// The controller hears about every reclaim, even of an empty host, so
+	// it can decide whether the lost capacity needs replacing.
 	plan := w.ctl.OnReclaimWarning(w.view(), h.ID, e.Deadline)
 	w.applyMigrations(plan.Migrations, reasonReclaim)
 	w.applyLaunches(plan.LaunchHosts)
+	w.retireIfEmpty(h)
 }
 
 func (w *World) handleHostDead(e *HostDead) {

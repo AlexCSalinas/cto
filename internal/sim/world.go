@@ -83,15 +83,19 @@ func Run(cfg config.Scenario, ctl controller.Controller, seed uint64) (Result, e
 	w.q.push(&MetricsSample{at(cfg.SampleIntervalSec)})
 	w.q.push(&SimEnd{at(cfg.DurationSec)})
 	ctl.Init(w.view())
+	w.loop()
+	return w.result(), nil
+}
 
+// loop drains the queue until SimEnd.
+func (w *World) loop() {
 	for w.q.len() > 0 {
 		ev := w.q.pop()
 		w.now = ev.At()
 		if w.dispatch(ev) {
-			break
+			return
 		}
 	}
-	return w.result(), nil
 }
 
 // dispatch routes one event to its handler and reports whether the run is
