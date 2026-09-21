@@ -3,6 +3,7 @@ package sim
 import (
 	"sort"
 
+	"github.com/alexcsalinas/cto/internal/controller"
 	"github.com/alexcsalinas/cto/internal/fleet"
 )
 
@@ -12,7 +13,7 @@ func (w *World) handleBoxArrive(e *BoxArrive) {
 	b.PendingSince = w.now
 	b.LastUpdateAt = w.now
 	w.m.Arrived()
-	w.tryPlace(b)
+	w.tryPlace(w.view(), b)
 }
 
 // pendingBoxes returns unplaced boxes oldest first so retries are fair and
@@ -34,17 +35,23 @@ func (w *World) pendingBoxes() []*fleet.Box {
 	return out
 }
 
+// placePending retries every waiting box. The view is only rebuilt after a
+// successful placement: a refusal changes nothing, and rebuilding per box
+// made a long backlog quadratic.
 func (w *World) placePending() {
+	v := w.view()
 	for _, b := range w.pendingBoxes() {
-		w.tryPlace(b)
+		if w.tryPlace(v, b) {
+			v = w.view()
+		}
 	}
 }
 
 // tryPlace asks the controller for a host. A decision the simulator cannot
 // honour (unknown, not running, or physically full host) leaves the box
 // Pending rather than failing the run.
-func (w *World) tryPlace(b *fleet.Box) bool {
-	id := w.ctl.Place(w.view(), boxView(b, w.migs.byBox[b.ID] != nil))
+func (w *World) tryPlace(v controller.FleetView, b *fleet.Box) bool {
+	id := w.ctl.Place(v, boxView(b, false))
 	if id == "" {
 		return false
 	}
