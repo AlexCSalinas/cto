@@ -6,12 +6,19 @@ import (
 )
 
 func (w *World) handleControllerTick() {
+	w.controllerTick()
+	w.q.push(&ControllerTick{at(w.now + w.cfg.Controller.TickIntervalSec)})
+}
+
+// controllerTick retries placements and applies the controller's plan. It
+// also runs when a host finishes booting so a replacement launched during a
+// reclaim warning can be used before the deadline.
+func (w *World) controllerTick() {
 	w.placePending()
 	plan := w.ctl.Tick(w.view(), w.now)
 	w.applyMigrations(plan.Migrations, reasonRebalance)
 	w.applyLaunches(plan.LaunchHosts)
 	w.applyShutdowns(plan.ShutdownHosts)
-	w.q.push(&ControllerTick{at(w.now + w.cfg.Controller.TickIntervalSec)})
 }
 
 // handleCheckpointTick snapshots every awake box. Sleeping boxes were

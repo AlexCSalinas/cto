@@ -82,10 +82,9 @@ type HostView struct {
 	ReqMemGB    float64
 	ReqCPU      float64
 	// Migrations queued or running with this host as an endpoint, and the
-	// observed memory of boxes heading here.
-	InFlight       int
-	IncomingMemGB  float64
-	IncomingReqMem float64
+	// boxes heading here (so a controller can reserve room for them).
+	InFlight int
+	Incoming []BoxView
 }
 
 // MigrationView is a queued or running migration.

@@ -57,6 +57,10 @@ func (Naive) OnReclaimWarning(v FleetView, host fleet.HostID, _ int64) Evacuatio
 // fitsRequested checks capacity by requested resources, counting boxes
 // already heading to the host and any extra the caller has promised.
 func fitsRequested(h HostView, b BoxView, extraMem, extraCPU float64) bool {
-	return h.ReqMemGB+h.IncomingReqMem+extraMem+b.ReqMemGB <= h.MemGB &&
-		h.ReqCPU+extraCPU+b.ReqCPU <= h.CPU
+	mem, cpu := h.ReqMemGB+extraMem, h.ReqCPU+extraCPU
+	for _, in := range h.Incoming {
+		mem += in.ReqMemGB
+		cpu += in.ReqCPU
+	}
+	return mem+b.ReqMemGB <= h.MemGB && cpu+b.ReqCPU <= h.CPU
 }

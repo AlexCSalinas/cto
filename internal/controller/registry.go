@@ -7,7 +7,9 @@ import (
 
 // constructors maps registry names to controller factories.
 var constructors = map[string]func(Config) Controller{
-	"naive": func(Config) Controller { return Naive{} },
+	"naive":  func(Config) Controller { return Naive{} },
+	"greedy": func(c Config) Controller { return NewGreedy(c) },
+	"lp":     func(c Config) Controller { return NewLP(c) },
 }
 
 // New builds a controller by registry name.

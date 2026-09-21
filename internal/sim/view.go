@@ -64,8 +64,7 @@ func (w *World) view() controller.FleetView {
 				hv.InFlight++
 			}
 			if hv.ID == m.to {
-				hv.IncomingMemGB += b.ObsMemGB
-				hv.IncomingReqMem += b.ReqMemGB
+				hv.Incoming = append(hv.Incoming, boxView(b, true))
 			}
 		}
 	}

@@ -82,7 +82,7 @@ func (w *World) handleHostBooted(e *HostBooted) {
 	if h.State == fleet.HostBooting {
 		h.State = fleet.HostRunning
 	}
-	w.placePending()
+	w.controllerTick()
 	w.startMigrations()
 }
 
