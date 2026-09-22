@@ -201,3 +201,53 @@ launches one replacement of the same type.
 - The project is about 3,000 lines of non-test Go plus 1,000 lines of tests,
   somewhat above the 2–3k target; config validation and the two controllers
   are where the bulk is.
+
+## 10. Calibration against real Sailboxes (2026-09-22)
+
+Three Sailboxes (app `cto`) ran `scripts/sail/workload.py` for 8 h; the
+platform's own metrics and phase logs are in `scenarios/traces/`. Total
+spend for the exercise was $1.00. What was measured, and what it changes:
+
+- **Elastic memory is real and hot-plugged.** A size-s box boots with
+  1.9 GiB of guest RAM under a 16 GiB cap and grows on demand (the build
+  box reached 16.9 GiB guest MemTotal). The platform reports used vs
+  requested exactly as the model assumes. Growth lags allocation: the
+  deep-research box was OOM-killed by the guest kernel 62 s in when it
+  allocated 1.93 GiB against 1.93 GiB of MemTotal. The simulator's bounded
+  ramp (`mem_ramp_gb_per_sec`) is the right shape, but it does not model
+  the failure mode when a box outruns it. The workload now grows in
+  256 MiB steps.
+- **Ramp rate.** At 60 s resolution (the finest the 6h metrics window
+  gives) a 1.7–1.9 GiB allocation completes within one sample, so the real
+  ramp is at least 0.03 GB/s and consistent with the 0.5 GB/s default; the
+  data cannot pin it tighter.
+- **Resident floor.** After the workload exited, used memory settled at
+  0.12–0.13 GiB (size s and m alike); the model's 0.25 GB floor is
+  conservative by 2×.
+- **CPU tracks phases one-for-one.** Per-sample `cpu_used_vcpu` equalled
+  the logged active fraction of that interval (0.98–0.99 vCPU during
+  bursts, 0.00 during waits). The measured active fractions were 0.45
+  (coding, target 0.40) and 0.81 (build, target 0.80), which validates the
+  wait-scaling arithmetic, not the archetypes themselves: the workload is
+  synthetic.
+- **Autosleep did not engage during waits, and the reason matters.** Sail
+  defines idle as no CPU use, no process waiting on a timer, and no open
+  connection other than an outbound request awaiting its reply. The first
+  run's waits were `time.sleep()`, a timer wait, so the boxes stayed awake
+  and were billed for resident memory through every wait (both boxes were
+  sampled continuously; used memory stayed flat at the burst's peak). A
+  real agent blocked on an inference HTTP request is explicitly allowed to
+  sleep, which is the case the simulator models. The workload's waits are
+  now wall-clock alarms by default. A 180 s alarm wait fired on time but the
+  box was still awake 105 s in and slept only after the process exited:
+  inconclusive, since an empty box also needed ~2 min to be seen asleep.
+  A wait blocked on a real outbound HTTP request is the test that would
+  settle it.
+- **Sleeping is not billed, and the empty box slept in ~2 min** (the smoke
+  box before its workload started; the default idle timeout is 30 s).
+- **Sampling.** `metrics?range=24h` returns 15-minute peaks; `6h` returns
+  1-minute samples. The spend endpoint settles per box on termination.
+- **Not observable from outside:** live migrations and host preemption.
+  Sail states migrations happen a few times a day and are invisible to the
+  agent; nothing in the metrics or lifecycle API exposes them, so the
+  lost-work side of the model remains unvalidated.

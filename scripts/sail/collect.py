@@ -70,9 +70,15 @@ def main():
                 capture_output=True, text=True, timeout=120,
             )
             trace["phases"] = [json.loads(l) for l in out.stdout.splitlines() if l.startswith("{")]
-        path = OUT / f"{name}.json"
+        path = OUT / f"{name}{'' if args.range == '24h' else '-' + args.range}.json"
         path.write_text(json.dumps(trace, indent=1))
         print(f"{name}: {len(trace['samples'])} samples, {len(trace['phases'])} phase events -> {path}")
+    # Spend for the whole app; per-box figures are inside. Estimates settle
+    # once a box is terminated.
+    app_id = get(f"/sailboxes/{box_id}", key).get("app_id")
+    spend = get(f"/sailboxes/spend?app_id={app_id}", key)
+    (OUT / "spend.json").write_text(json.dumps(spend, indent=1))
+    print(f"spend: ${spend.get('estimated_total_cost_usd_nanos', 0) / 1e9:.4f} -> {OUT / 'spend.json'}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,503 @@
+{
+ "name": "build-heavy",
+ "sailbox_id": "sb_6091488c-74b3-4911-905d-5f8ff7497cb0",
+ "size": {
+  "cpu_requested_vcpu": 4,
+  "memory_requested_bytes": 34359738368
+ },
+ "range": "24h",
+ "samples": [
+  {
+   "timestamp": "2026-09-22T01:30:00Z",
+   "cpu_used_vcpu": 0.8627384890069528,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8859672576,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T01:45:00Z",
+   "cpu_used_vcpu": 0.9853641583203198,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8861732864,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T02:00:00Z",
+   "cpu_used_vcpu": 0.8656587098369267,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8862248960,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T02:15:00Z",
+   "cpu_used_vcpu": 0.6424667427158623,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 12166922240,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T02:30:00Z",
+   "cpu_used_vcpu": 0.9882008234929242,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 12167151616,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T02:45:00Z",
+   "cpu_used_vcpu": 0.9833270022086135,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 12167151616,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T03:00:00Z",
+   "cpu_used_vcpu": 0.7824877805839233,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 12167151616,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T03:15:00Z",
+   "cpu_used_vcpu": 0.9980837968243532,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 6824124416,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T03:30:00Z",
+   "cpu_used_vcpu": 0.9980844262524552,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 6824124416,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T03:45:00Z",
+   "cpu_used_vcpu": 0.7730039921527283,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 6824849408,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T04:00:00Z",
+   "cpu_used_vcpu": 0.8459443779904936,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8707043328,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T04:15:00Z",
+   "cpu_used_vcpu": 0.9968922701874523,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8706269184,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T04:30:00Z",
+   "cpu_used_vcpu": 0.9968913043755824,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8706269184,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T04:45:00Z",
+   "cpu_used_vcpu": 0.9971901171895678,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8706269184,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T05:00:00Z",
+   "cpu_used_vcpu": 0.4559417315312981,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 14320263168,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T05:15:00Z",
+   "cpu_used_vcpu": 0.9948935318920571,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 14318845952,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T05:30:00Z",
+   "cpu_used_vcpu": 0.9595325942219693,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 14318845952,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T05:45:00Z",
+   "cpu_used_vcpu": 0.31700034948856953,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 14319869952,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T06:00:00Z",
+   "cpu_used_vcpu": 0.9828514411579299,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8169271296,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T06:15:00Z",
+   "cpu_used_vcpu": 0.9957770911215299,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8169779200,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T06:30:00Z",
+   "cpu_used_vcpu": 0.4625777931435488,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 8173674496,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T06:45:00Z",
+   "cpu_used_vcpu": 0.6699244430210379,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 11333210112,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T07:00:00Z",
+   "cpu_used_vcpu": 0.9958225817167989,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 11333201920,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T07:15:00Z",
+   "cpu_used_vcpu": 0.9956700495938249,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 11333201920,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T07:30:00Z",
+   "cpu_used_vcpu": 0.48271442156606176,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 11334479872,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T07:45:00Z",
+   "cpu_used_vcpu": 0.7269146296052938,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 11334737920,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T08:00:00Z",
+   "cpu_used_vcpu": 0.9988358355928727,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 7311978496,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T08:15:00Z",
+   "cpu_used_vcpu": 0.9925421306089856,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 7312474112,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T08:30:00Z",
+   "cpu_used_vcpu": 0.4112521609098833,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 7315730432,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T08:45:00Z",
+   "cpu_used_vcpu": 0.7653840311667076,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 9332891648,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T09:00:00Z",
+   "cpu_used_vcpu": 0.23012893285992925,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 10955857920,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T09:15:00Z",
+   "cpu_used_vcpu": 0.9966272051117777,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 10955857920,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T09:30:00Z",
+   "cpu_used_vcpu": 0.9922367183356668,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 10956873728,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T09:45:00Z",
+   "cpu_used_vcpu": 0.8014464238847917,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 10957639680,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  },
+  {
+   "timestamp": "2026-09-22T10:00:00Z",
+   "cpu_used_vcpu": 0.001382449809179916,
+   "cpu_requested_vcpu": 4,
+   "memory_used_bytes": 10958413824,
+   "memory_requested_bytes": 34359738368,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 137438953472
+  }
+ ],
+ "phases": [
+  {
+   "event": "start",
+   "archetype": "build-heavy",
+   "hours": 8.0,
+   "wait_scale": 15.0,
+   "t": "2026-09-22T01:35:38Z",
+   "meminfo_total_gib": 7.768,
+   "meminfo_avail_gib": 7.639
+  },
+  {
+   "event": "active",
+   "target_gib": 7.9,
+   "dur_s": 2232,
+   "t": "2026-09-22T01:35:38Z",
+   "meminfo_total_gib": 7.768,
+   "meminfo_avail_gib": 7.639
+  },
+  {
+   "event": "wait",
+   "dur_s": 427,
+   "held_gib": 7.88,
+   "t": "2026-09-22T02:13:06Z",
+   "meminfo_total_gib": 12.018,
+   "meminfo_avail_gib": 3.765
+  },
+  {
+   "event": "active",
+   "target_gib": 10.83,
+   "dur_s": 2477,
+   "t": "2026-09-22T02:20:13Z",
+   "meminfo_total_gib": 12.018,
+   "meminfo_avail_gib": 3.765
+  },
+  {
+   "event": "wait",
+   "dur_s": 199,
+   "held_gib": 10.81,
+   "t": "2026-09-22T03:01:36Z",
+   "meminfo_total_gib": 14.518,
+   "meminfo_avail_gib": 3.186
+  },
+  {
+   "event": "active",
+   "target_gib": 6.11,
+   "dur_s": 3112,
+   "t": "2026-09-22T03:04:55Z",
+   "meminfo_total_gib": 14.518,
+   "meminfo_avail_gib": 3.186
+  },
+  {
+   "event": "wait",
+   "dur_s": 344,
+   "held_gib": 6.06,
+   "t": "2026-09-22T03:56:48Z",
+   "meminfo_total_gib": 10.518,
+   "meminfo_avail_gib": 4.162
+  },
+  {
+   "event": "active",
+   "target_gib": 7.87,
+   "dur_s": 3586,
+   "t": "2026-09-22T04:02:32Z",
+   "meminfo_total_gib": 10.518,
+   "meminfo_avail_gib": 4.162
+  },
+  {
+   "event": "wait",
+   "dur_s": 502,
+   "held_gib": 7.81,
+   "t": "2026-09-22T05:02:22Z",
+   "meminfo_total_gib": 10.518,
+   "meminfo_avail_gib": 2.41
+  },
+  {
+   "event": "active",
+   "target_gib": 12.69,
+   "dur_s": 2029,
+   "t": "2026-09-22T05:10:45Z",
+   "meminfo_total_gib": 10.518,
+   "meminfo_avail_gib": 2.409
+  },
+  {
+   "event": "wait",
+   "dur_s": 629,
+   "held_gib": 12.69,
+   "t": "2026-09-22T05:44:43Z",
+   "meminfo_total_gib": 16.893,
+   "meminfo_avail_gib": 3.557
+  },
+  {
+   "event": "active",
+   "target_gib": 7.2,
+   "dur_s": 2504,
+   "t": "2026-09-22T05:55:12Z",
+   "meminfo_total_gib": 16.893,
+   "meminfo_avail_gib": 3.557
+  },
+  {
+   "event": "wait",
+   "dur_s": 801,
+   "held_gib": 7.19,
+   "t": "2026-09-22T06:36:57Z",
+   "meminfo_total_gib": 12.893,
+   "meminfo_avail_gib": 5.284
+  },
+  {
+   "event": "active",
+   "target_gib": 10.19,
+   "dur_s": 2823,
+   "t": "2026-09-22T06:50:18Z",
+   "meminfo_total_gib": 12.893,
+   "meminfo_avail_gib": 5.281
+  },
+  {
+   "event": "wait",
+   "dur_s": 653,
+   "held_gib": 10.12,
+   "t": "2026-09-22T07:37:27Z",
+   "meminfo_total_gib": 12.893,
+   "meminfo_avail_gib": 2.338
+  },
+  {
+   "event": "active",
+   "target_gib": 6.51,
+   "dur_s": 2874,
+   "t": "2026-09-22T07:48:20Z",
+   "meminfo_total_gib": 12.893,
+   "meminfo_avail_gib": 2.337
+  },
+  {
+   "event": "wait",
+   "dur_s": 593,
+   "held_gib": 6.5,
+   "t": "2026-09-22T08:36:15Z",
+   "meminfo_total_gib": 10.893,
+   "meminfo_avail_gib": 4.082
+  },
+  {
+   "event": "active",
+   "target_gib": 8.41,
+   "dur_s": 693,
+   "t": "2026-09-22T08:46:09Z",
+   "meminfo_total_gib": 10.893,
+   "meminfo_avail_gib": 4.079
+  },
+  {
+   "event": "wait",
+   "dur_s": 799,
+   "held_gib": 8.38,
+   "t": "2026-09-22T08:57:45Z",
+   "meminfo_total_gib": 10.893,
+   "meminfo_avail_gib": 2.203
+  },
+  {
+   "event": "active",
+   "target_gib": 9.78,
+   "dur_s": 2756,
+   "t": "2026-09-22T09:11:04Z",
+   "meminfo_total_gib": 10.893,
+   "meminfo_avail_gib": 2.202
+  },
+  {
+   "event": "wait",
+   "dur_s": 809,
+   "held_gib": 9.75,
+   "t": "2026-09-22T09:57:03Z",
+   "meminfo_total_gib": 13.393,
+   "meminfo_avail_gib": 3.188
+  },
+  {
+   "event": "done",
+   "t": "2026-09-22T10:10:32Z",
+   "meminfo_total_gib": 13.393,
+   "meminfo_avail_gib": 3.187
+  }
+ ]
+}

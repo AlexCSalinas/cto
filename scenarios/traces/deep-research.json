@@ -1,0 +1,39 @@
+{
+ "name": "deep-research",
+ "sailbox_id": "sb_bee64b72-cc99-4f17-a95c-cf95fc4ec605",
+ "size": {
+  "cpu_requested_vcpu": 1,
+  "memory_requested_bytes": 17179869184
+ },
+ "range": "24h",
+ "samples": [
+  {
+   "timestamp": "2026-09-22T01:30:00Z",
+   "cpu_used_vcpu": 0,
+   "cpu_requested_vcpu": 1,
+   "memory_used_bytes": 119332864,
+   "memory_requested_bytes": 17179869184,
+   "disk_used_bytes": 683290624,
+   "disk_requested_bytes": 34359738368
+  }
+ ],
+ "phases": [
+  {
+   "event": "start",
+   "archetype": "deep-research",
+   "hours": 8.0,
+   "wait_scale": 0.97,
+   "t": "2026-09-22T01:35:33Z",
+   "meminfo_total_gib": 1.934,
+   "meminfo_avail_gib": 1.872
+  },
+  {
+   "event": "active",
+   "target_gib": 1.93,
+   "dur_s": 285,
+   "t": "2026-09-22T01:35:33Z",
+   "meminfo_total_gib": 1.934,
+   "meminfo_avail_gib": 1.872
+  }
+ ]
+}

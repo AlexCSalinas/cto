@@ -103,6 +103,38 @@ three times the work for less than twice the money. On
 gets 2.0× work per dollar with 82% less lost work; on `bursty.json` 1.5×
 and 98% less.
 
+## Calibration against real Sailboxes
+
+The model was checked against Sail Research's Sailboxes, the product it is
+shaped after. Three boxes ran archetype-shaped synthetic workloads
+(`scripts/sail/workload.py`) for 8 hours; `scripts/sail/collect.py` pulled
+the platform's own metrics and the phase logs into `scenarios/traces/`.
+Total spend: $1.00.
+
+| assumption in the model | measured on Sailboxes |
+|---|---|
+| billed on observed memory, not requested | yes: $0.008 per used GiB-hour, sampled every ~15 s; caps of 16/32 GiB against 2–10 GiB used |
+| memory is elastic and ramps | yes: guest boots with 1.9 GiB, hot-plugs to 16.9 GiB on demand; a 1.8 GiB allocation lands within one 60 s sample |
+| resident floor 0.25 GB | 0.12–0.13 GiB after the workload exited |
+| CPU follows active/wait phases | per-sample vCPU equals the logged active fraction (0.98 busy, 0.00 idle) |
+| boxes sleep while waiting on inference | true by Sail's idle rule for an outbound request awaiting reply; our `time.sleep()` waits counted as timer waits and kept boxes awake, so the first run was billed through waits |
+| sleeping time is free | yes: an idle box slept in ~2 min and stopped being sampled |
+| migration and preemption model | not observable: Sail exposes neither migration nor reclaim events |
+
+Two things the model gets wrong or misses: the floor is 2× too high, and a
+box that allocates faster than the hot-plug can follow is OOM-killed inside
+the guest (the deep-research box died 62 s in), a failure mode the bounded
+ramp does not represent. Details and numbers in `DESIGN.md` §10.
+
+A follow-up test replaced the timer waits with a wall-clock alarm
+(`timerfd` on `CLOCK_REALTIME_ALARM`, the other idle-exempt wait in Sail's
+rule). The alarm fired on time, but the box was still running 105 s into
+a 180 s wait and only slept once the process exited, so that result is
+inconclusive: an empty box also took about two minutes to be seen asleep.
+The faithful test is a process blocked on a real outbound inference
+request, which is the case Sail documents as sleepable and the case the
+simulator models.
+
 ## What greedy does
 
 1. **Placement** is best-fit on *observed* memory plus a 20% headroom on

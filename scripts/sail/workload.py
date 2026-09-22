@@ -8,14 +8,31 @@ point is not the work itself but what the platform observes: how memory
 ramps and is billed, whether autosleep kicks in during waits, and how
 quickly the box resumes. Phase transitions are logged as JSON lines so they
 can be lined up with the platform's metrics afterwards.
+
+Two lessons from the first run are baked in:
+
+- Memory is grown in steps with short pauses. The guest's memory is
+  hot-plugged on demand and a single large allocation can outrun it; the
+  first deep-research box was OOM-killed inside the guest 62 s in.
+- Waits default to a wall-clock alarm (timerfd on CLOCK_REALTIME_ALARM)
+  instead of time.sleep(). Sail's autosleep treats "a process waiting on a
+  timer" as not idle, so time.sleep() kept the first boxes awake and billed
+  through every wait. A real agent blocked on an outbound inference request
+  is allowed to sleep; the alarm is the closest stand-in that needs no
+  network. --wait-mode sleep reproduces the old behaviour.
 """
 import argparse
+import ctypes
 import json
+import os
 import random
+import struct
 import sys
 import time
 
 CHUNK = 64 << 20  # 64 MiB
+GROW_STEP = 4  # chunks per growth step (256 MiB)
+GROW_PAUSE_S = 0.5
 
 # Memory targets are in GiB and deliberately small; the ratios and phase
 # timings mirror the simulator's archetypes.
@@ -45,14 +62,17 @@ def meminfo(key):
 
 
 def resize(chunks, target_gib):
-    """Grow or shrink the resident set to target_gib, touching new pages."""
+    """Grow or shrink the resident set to target_gib, touching new pages.
+    Growth is stepped so the guest's hot-plugged memory can keep up."""
     want = int(target_gib * (1 << 30) / CHUNK)
     while len(chunks) > want:
         chunks.pop()
     while len(chunks) < want:
-        c = bytearray(CHUNK)
-        c[::4096] = b"x" * len(c[::4096])  # fault every page in
-        chunks.append(c)
+        for _ in range(min(GROW_STEP, want - len(chunks))):
+            c = bytearray(CHUNK)
+            c[::4096] = b"x" * len(c[::4096])  # fault every page in
+            chunks.append(c)
+        time.sleep(GROW_PAUSE_S)
 
 
 def burst(chunks, seconds, touch_frac):
@@ -73,11 +93,33 @@ def burst(chunks, seconds, touch_frac):
     return i
 
 
+def wait_alarm(seconds):
+    """Block on a wall-clock alarm rather than a timer. Falls back to sleep
+    if the kernel refuses the alarm clock (returns which one was used)."""
+    CLOCK_REALTIME_ALARM = 8
+    libc = ctypes.CDLL(None, use_errno=True)
+    fd = libc.timerfd_create(CLOCK_REALTIME_ALARM, 0)
+    if fd < 0:
+        time.sleep(seconds)
+        return "sleep"
+    # struct itimerspec { interval {sec, nsec}; value {sec, nsec} }
+    spec = struct.pack("qqqq", 0, 0, int(time.time() + seconds), 0)
+    TFD_TIMER_ABSTIME = 1
+    if libc.timerfd_settime(fd, TFD_TIMER_ABSTIME, spec, None) < 0:
+        os.close(fd)
+        time.sleep(seconds)
+        return "sleep"
+    os.read(fd, 8)  # blocks until the alarm fires
+    os.close(fd)
+    return "alarm"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--archetype", required=True, choices=sorted(ARCHETYPES))
     ap.add_argument("--hours", type=float, default=6)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--wait-mode", choices=["alarm", "sleep"], default="alarm")
     args = ap.parse_args()
     a = ARCHETYPES[args.archetype]
     rng = random.Random(args.seed)
@@ -88,7 +130,7 @@ def main():
 
     chunks = []
     deadline = time.time() + args.hours * 3600
-    log(event="start", archetype=args.archetype, hours=args.hours, wait_scale=round(wait_scale, 2))
+    log(event="start", archetype=args.archetype, hours=args.hours, wait_scale=round(wait_scale, 2), wait_mode=args.wait_mode)
     while time.time() < deadline:
         target = rng.uniform(*a["mem"])
         dur = rng.uniform(*a["burst"])
@@ -97,7 +139,9 @@ def main():
         burst(chunks, dur, a["touch_frac"])
         dur = rng.uniform(*a["wait"]) * wait_scale
         log(event="wait", dur_s=int(dur), held_gib=round(len(chunks) * CHUNK / (1 << 30), 2))
-        time.sleep(dur)
+        started = time.time()
+        used = wait_alarm(dur) if args.wait_mode == "alarm" else (time.sleep(dur) or "sleep")
+        log(event="woke", waited_s=int(time.time() - started), wait_used=used)
     log(event="done")
 
 
