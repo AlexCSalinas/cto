@@ -1,0 +1,4 @@
+# name  sailbox_id   (app "cto", created 2026-09-22 01:33Z; workloads started 01:35Z for 8h)
+coding-agent  sb_2339a58d-7e2c-46a4-933d-050d6e63b464
+deep-research sb_bee64b72-cc99-4f17-a95c-cf95fc4ec605
+build-heavy   sb_6091488c-74b3-4911-905d-5f8ff7497cb0
