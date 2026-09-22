@@ -1,186 +1,115 @@
 # CTO — Chief Token Officer
 
-CTO is a discrete-event simulator for scheduling long-running AI agent
-sandboxes ("boxes") across a fleet of cheap, preemptible hosts. Agent
-sandboxes are VMs that live for hours, spend most of that time asleep
-waiting on an inference call, and can be live-migrated. Spot hosts are
-half the price of on-demand but disappear with two minutes' notice. The
-money in agent infrastructure is made or lost at the fleet level: how
-tightly you pack observed (not requested) usage, how little you pay for the
-capacity that is idle, and how much agent progress you throw away when a
-host is reclaimed. CTO exists to compare scheduling controllers fairly on
-exactly that trade-off, under identical seeded workloads, with one number
-to argue about: **useful work-seconds per dollar**.
+A simulator for one question: **how do you run long-lived AI agent sandboxes
+on cheap, preemptible cloud hosts without paying for idle capacity or losing
+work when a host gets reclaimed?**
 
-```
-                         ┌──────────────────────────────────────────┐
-   seeded workload ───▶  │  event queue  (container/heap, (At,Seq)) │
-   boxes + phases        │  BoxArrive PhaseEnd BoxSleep BoxWake     │
-   host lifetimes        │  MigrationStop/Done CheckpointTick       │
-                         │  ReclaimWarning HostDead HostBooted      │
-                         │  ControllerTick MetricsSample SimEnd     │
-                         └───────────────┬──────────────────────────┘
-                                         │ pop, w.now = At
-                                         ▼
-                         ┌──────────────────────────────────────────┐
-                         │  World: hosts, boxes, migrations, clock  │
-                         │  lazy integration of memory/dirty/work   │
-                         └───────┬───────────────────────▲──────────┘
-                    read-only    │                        │ Plan /
-                    FleetView    │                        │ EvacuationPlan /
-                    (copies)     ▼                        │ HostID
-                         ┌──────────────────────────────────────────┐
-                         │  Controller: Place · Tick · OnReclaim    │
-                         │  naive | greedy | lp (stub)              │
-                         └──────────────────────────────────────────┘
-```
+Agent sandboxes live for hours, spend most of that time asleep waiting on a
+model, and can be live-migrated. Spot hosts cost half as much but vanish with
+two minutes' notice. CTO plays out that world as a discrete-event simulation
+and compares scheduling policies on a single number: **useful work per
+dollar**. Same seed in, byte-identical results out. Go, standard library only.
 
-The controller only ever sees snapshots and answers with plans. The
-simulator decides what actually happens, validates every decision, and
-records the metrics.
+## Results
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/compare-dark.svg">
+  <img alt="naive vs greedy: work per dollar and lost work across three scenarios" src="docs/compare-light.svg" width="760">
+</picture>
+
+`naive` packs boxes by what they *requested* and never moves anything.
+`greedy` packs by what they actually *use*, moves boxes to keep hosts full,
+and evacuates a reclaimed host most-valuable-work-first. Greedy does about
+three times the work for less than twice the money, and almost never loses
+any. The one place it struggled, 60-second reclaim warnings, was fixed by
+holding one host's worth of slack: a warning is shorter than a boot, so the
+room has to exist before the warning comes.
+
+## Checked against a real platform
+
+The model is shaped after Sail Research's Sailboxes, so I ran three of them
+for eight hours ($1.00 total) with agent-shaped workloads and pulled Sail's
+own metrics.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/trace-dark.svg">
+  <img alt="a real Sailbox trace: memory and CPU over time with active phases shaded" src="docs/trace-light.svg" width="760">
+</picture>
+
+What held up:
+
+- Sail bills observed memory, sampled every 15 seconds. Memory is elastic:
+  the guest boots with 1.9 GiB and grows on demand.
+- CPU follows the work phases exactly, and idle time is free once a box sleeps.
+
+What didn't:
+
+- The resident floor I assumed (0.25 GB) is twice the real one (0.12 GiB).
+- Allocate faster than the guest's memory can grow and the kernel kills your
+  process. The model's bounded ramp has no failure mode.
+- My waits used `time.sleep()`, which Sail's idle rule counts as *not idle*,
+  so the boxes stayed awake through every wait. A real agent blocked on an
+  inference call is allowed to sleep. Good to know before you assume.
+- Migrations and preemptions are invisible from outside. That half of the
+  model is a hypothesis about Sail's internals, not a measurement.
+
+Raw traces, spend, and the scripts are under `scenarios/traces/` and
+`scripts/sail/`. Full notes in [DESIGN.md](DESIGN.md).
 
 ## Quickstart
 
 ```
-make            # go build ./...
+make            # build
 make test
-make run        # one run: greedy on scenarios/base.json, seed 42
-make compare    # naive vs greedy, 5 seeds, on every scenario
-
-go run ./cmd/cto run      -scenario scenarios/base.json -controller greedy -seed 42 -out summary.json -out-series series.csv
-go run ./cmd/cto compare  -scenario scenarios/high-preemption.json -controllers naive,greedy,lp -seeds 1,2,3
-go run ./cmd/cto validate -scenario scenarios/bursty.json
+make compare    # naive vs greedy, five seeds, every scenario
+go run ./cmd/cto run -scenario scenarios/base.json -controller greedy -seed 42 -out summary.json
 ```
 
-Go 1.22+, standard library only. Same scenario + same seed ⇒ byte-identical
-output.
-
-## The model
-
-- **Boxes** arrive as a Poisson process and belong to an archetype
-  (`coding-agent`, `deep-research`, `build-heavy`) that fixes their
-  lifetime, requested memory, and a trace of alternating *Active* and
-  *WaitingOnInference* phases generated up front.
-- Observed memory ramps toward each phase's target at a bounded rate
-  (0.5 GB/s); only Active phases dirty memory and count as useful work.
-- A box auto-sleeps 5 s into a wait: CPU drops to 0, memory to a 0.25 GB
-  resident floor, and paging out doubles as a checkpoint. Waking takes 2 s.
-- Every 600 s each awake box checkpoints in the background (dirty pages → 0).
-- **Hosts** are spot capacity with a per-hour preemption hazard. A reclaim
-  gives 120 s (60 s in `high-preemption`) of warning, then the host dies.
-  Boots take 60 s. Billing is per second while alive.
-- **Migration** cost depends on dirty pages since the last checkpoint:
-
-      transfer_gb  = DirtyGB + resident_floor
-      transfer_sec = transfer_gb / (min(NetA, NetB) / max_concurrent_per_host)
-      downtime_sec = fixed_downtime (2 s) + transfer_sec × downtime_fraction (0.2)
-
-  The box keeps running for the rest of the copy. Each host has two
-  migration slots; a migration needs one on each end.
-- A box on a host that dies loses the work since its last checkpoint and is
-  re-queued to resume from that checkpoint.
-- **Objective:** `work_per_dollar = Σ useful Active seconds / Σ host cost`.
-  In a real system the numerator is tokens or completed tasks per dollar.
-
-## Results (`make compare`, `scenarios/base.json`, seeds 1–5)
+## How it works
 
 ```
-metric                naive          greedy
-total_cost_usd        423 ± 0.146    804 ± 44
-work_per_dollar       8542 ± 54      14221 ± 632
-lost_work_sec         9303 ± 3288    93 ± 186
-mean_mem_utilization  0.262 ± 0.015  0.403 ± 0.014
-migrations_total      6.600 ± 6.877  667 ± 138
-total_downtime_sec    21 ± 22        2041 ± 411
-greedy: 1.7x work_per_dollar vs naive, 99% less lost work, 90% more cost
+ seeded workload ──▶ event queue (At, Seq) ──▶ World: hosts, boxes, migrations
+                                                   │  read-only snapshot
+                                                   ▼
+                                          Controller: Place · Tick · OnReclaim
+                                          naive | greedy | lp (stub)
 ```
 
-Naive spends less in absolute terms only because it never grows the fleet:
-it packs by *requested* memory, so its eight hosts are "full" at 26%
-observed utilization and most boxes queue for hours. Greedy runs about
-three times the work for less than twice the money. On
-`high-preemption.json` (0.25 reclaims per host-hour, 60 s warning) greedy
-gets 2.0× work per dollar with 82% less lost work; on `bursty.json` 1.5×
-and 98% less.
+- Boxes arrive as a Poisson process and alternate *active* bursts with
+  *waiting-on-inference* phases. Memory ramps toward a target; only active
+  phases do work or dirty pages.
+- A waiting box sleeps after 5 s: CPU 0, memory to a small floor, and paging
+  out doubles as a checkpoint. Every 600 s awake boxes checkpoint too.
+- Hosts are spot capacity with a preemption hazard. A reclaim gives 120 s
+  (60 s in the hard scenario), then the host dies and every box still on it
+  loses its work since the last checkpoint.
+- Migration cost comes from dirty pages:
 
-## Calibration against real Sailboxes
+      transfer_sec = (dirty_gb + floor) / (min(net_a, net_b) / slots)
+      downtime_sec = 2 + 0.2 × transfer_sec
 
-The model was checked against Sail Research's Sailboxes, the product it is
-shaped after. Three boxes ran archetype-shaped synthetic workloads
-(`scripts/sail/workload.py`) for 8 hours; `scripts/sail/collect.py` pulled
-the platform's own metrics and the phase logs into `scenarios/traces/`.
-Total spend: $1.00.
-
-| assumption in the model | measured on Sailboxes |
-|---|---|
-| billed on observed memory, not requested | yes: $0.008 per used GiB-hour, sampled every ~15 s; caps of 16/32 GiB against 2–10 GiB used |
-| memory is elastic and ramps | yes: guest boots with 1.9 GiB, hot-plugs to 16.9 GiB on demand; a 1.8 GiB allocation lands within one 60 s sample |
-| resident floor 0.25 GB | 0.12–0.13 GiB after the workload exited |
-| CPU follows active/wait phases | per-sample vCPU equals the logged active fraction (0.98 busy, 0.00 idle) |
-| boxes sleep while waiting on inference | true by Sail's idle rule for an outbound request awaiting reply; our `time.sleep()` waits counted as timer waits and kept boxes awake, so the first run was billed through waits |
-| sleeping time is free | yes: an idle box slept in ~2 min and stopped being sampled |
-| migration and preemption model | not observable: Sail exposes neither migration nor reclaim events |
-
-Two things the model gets wrong or misses: the floor is 2× too high, and a
-box that allocates faster than the hot-plug can follow is OOM-killed inside
-the guest (the deep-research box died 62 s in), a failure mode the bounded
-ramp does not represent. Details and numbers in `DESIGN.md` §10.
-
-A follow-up test replaced the timer waits with a wall-clock alarm
-(`timerfd` on `CLOCK_REALTIME_ALARM`, the other idle-exempt wait in Sail's
-rule). The alarm fired on time, but the box was still running 105 s into
-a 180 s wait and only slept once the process exited, so that result is
-inconclusive: an empty box also took about two minutes to be seen asleep.
-The faithful test is a process blocked on a real outbound inference
-request, which is the case Sail documents as sleepable and the case the
-simulator models.
+- Billing is per host-second. `work_per_dollar` = useful active seconds /
+  dollars. In a real system that's tokens or tasks per dollar.
 
 ## What greedy does
 
-1. **Placement** is best-fit on *observed* memory plus a 20% headroom on
-   the request, so hosts fill tightly and empties can be drained. A box
-   that has never run is sized by the mean observed/requested ratio of its
-   archetype, learned from the fleet.
-2. **Every 60 s** it moves one box off any host above 90% observed memory,
-   choosing the box that frees the most GB per second of migration and
-   sending it to the host with the most room.
-3. It **drains** a host below 25% when its boxes all fit elsewhere, and
-   shuts it down once empty.
-4. It **keeps an evacuation reserve**: enough free room across the fleet to
-   re-home the fullest spot host, launching ahead of time because a
-   reclaim warning is shorter than a boot.
-5. On a **reclaim warning** it orders boxes by uncheckpointed work per
-   second of migration, packs them onto the host's migration slots, and
-   skips any box that cannot finish before the deadline so it does not
-   delay the ones that can.
+1. Places by observed memory plus 20% headroom, best-fit, so hosts fill up
+   and empties can be drained.
+2. Every minute, moves one box off any host over 90%, picking the box that
+   frees the most memory per second of migration.
+3. Drains hosts under 25% and shuts them down.
+4. Keeps enough free room to re-home its fullest spot host, and launches
+   ahead of time when that slack is gone.
+5. On a reclaim warning, orders boxes by uncheckpointed work per migration
+   second and skips any that can't finish before the deadline.
 
-## What the LP version would do
-
-`lp` currently behaves like greedy; `internal/controller/lp.go` holds the
-formulation for the rebalance step, solved once per tick:
-
-    minimise   Σ_h y[h]·price[h]·T  +  λ·Σ_b m[b]·(DirtyGB[b] + floor)/bw[b]
-    subject to Σ_h x[b][h] = 1                       every live box on one host
-               Σ_b x[b][h]·demand[b] ≤ y[h]·cap[h]   observed + headroom fits
-               x[b][h] ≤ y[h]                        no box on a dead host
-               m[b] ≥ x[b][h]  for h ≠ current(b)    a move is a migration
-               per-host migration slots
-
-with `x[b][h]`, `y[h]`, `m[b]` binary. Greedy is the one-move-per-tick
-heuristic for this; the ILP would decide consolidation and relief moves
-jointly and price migrations against host cost explicitly.
+`lp` is where an ILP version would go (minimise host cost + λ·migration cost
+subject to capacity and one-host-per-box); the formulation is written out in
+`internal/controller/lp.go`, no solver.
 
 ## Limitations
 
-- Single region, no network topology, no disk or KV-cache model.
-- Preemptions are independent per host; real spot reclaims come in
-  correlated waves, which would make the evacuation reserve less effective.
-- Bandwidth is modelled as fixed per-slot shares; background checkpoints do
-  not compete with migrations.
-- No page-fault modelling: memory ramps linearly, and a box that outgrows
-  its host is only reported (`overcommit_host_samples`), not OOM-killed.
-- The simulator trusts the controller to keep boxes off draining hosts; a
-  controller can strand boxes.
-- Controllers cannot address a host they have just asked to launch.
-
-See `DESIGN.md` for every assumption, equation and tie-break rule.
+Single region, no network topology, no disk model, independent preemptions
+(real spot reclaims come in waves), slot-based bandwidth, no OOM. The
+workloads used for calibration are synthetic; real agent traces would be the
+next thing to ask for.

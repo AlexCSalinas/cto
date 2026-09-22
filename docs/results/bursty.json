@@ -1,0 +1,54 @@
+{
+  "greedy": {
+    "lost_work_sec": {
+      "Mean": 151,
+      "Stddev": 205.81788066152075
+    },
+    "mean_mem_utilization": {
+      "Mean": 0.352394071799847,
+      "Stddev": 0.008884932481378418
+    },
+    "migrations_total": {
+      "Mean": 566,
+      "Stddev": 121.70661444638085
+    },
+    "total_cost_usd": {
+      "Mean": 695.861994444444,
+      "Stddev": 40.05431106843346
+    },
+    "total_downtime_sec": {
+      "Mean": 1728,
+      "Stddev": 372.3036395202174
+    },
+    "work_per_dollar": {
+      "Mean": 12891.244097830126,
+      "Stddev": 567.1728322439894
+    }
+  },
+  "naive": {
+    "lost_work_sec": {
+      "Mean": 8212.2,
+      "Stddev": 1992.4989836885738
+    },
+    "mean_mem_utilization": {
+      "Mean": 0.24771515436924263,
+      "Stddev": 0.02352679402046781
+    },
+    "migrations_total": {
+      "Mean": 6.8,
+      "Stddev": 4.658325879540847
+    },
+    "total_cost_usd": {
+      "Mean": 423.1101055555555,
+      "Stddev": 0.168340474041786
+    },
+    "total_downtime_sec": {
+      "Mean": 22,
+      "Stddev": 14.949916387726054
+    },
+    "work_per_dollar": {
+      "Mean": 8385.36759348142,
+      "Stddev": 71.00113399890864
+    }
+  }
+}

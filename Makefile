@@ -1,4 +1,4 @@
-.PHONY: build test vet fmt run compare validate clean
+.PHONY: build test vet fmt run compare validate charts clean
 
 SCENARIO ?= scenarios/base.json
 CONTROLLER ?= greedy
@@ -28,6 +28,13 @@ compare: build
 		go run ./cmd/cto compare -scenario $$s -controllers naive,greedy -seeds 1,2,3,4,5; \
 		echo; \
 	done
+
+charts: build
+	@for s in scenarios/*.json; do \
+		n=$$(basename $$s .json); \
+		go run ./cmd/cto compare -scenario $$s -controllers naive,greedy -seeds 1,2,3,4,5 -out docs/results/$$n.json >/dev/null; \
+	done
+	python3 scripts/charts.py
 
 clean:
 	rm -f summary.json series.csv

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -19,6 +20,7 @@ func cmdCompare(args []string) error {
 	scenario := fs.String("scenario", "scenarios/base.json", "scenario JSON file")
 	names := fs.String("controllers", "naive,greedy", "comma-separated controller names; the first is the baseline")
 	seeds := fs.String("seeds", "1,2,3,4,5", "comma-separated seeds")
+	out := fs.String("out", "", "write per-controller mean/stddev of the key metrics as JSON to this file")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -48,6 +50,13 @@ func cmdCompare(args []string) error {
 		results[name] = metrics.Aggregate(runs)
 	}
 	printComparison(ctlNames, results)
+	if *out != "" {
+		return writeFile(*out, func(f *os.File) error {
+			enc := json.NewEncoder(f)
+			enc.SetIndent("", "  ")
+			return enc.Encode(results)
+		})
+	}
 	return nil
 }
 
