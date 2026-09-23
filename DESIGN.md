@@ -211,12 +211,15 @@ spend for the exercise was $1.00. What was measured, and what it changes:
 - **Elastic memory is real and hot-plugged.** A size-s box boots with
   1.9 GiB of guest RAM under a 16 GiB cap and grows on demand (the build
   box reached 16.9 GiB guest MemTotal). The platform reports used vs
-  requested exactly as the model assumes. Growth lags allocation: the
-  deep-research box was OOM-killed by the guest kernel 62 s in when it
-  allocated 1.93 GiB against 1.93 GiB of MemTotal. The simulator's bounded
-  ramp (`mem_ramp_gb_per_sec`) is the right shape, but it does not model
-  the failure mode when a box outruns it. The workload now grows in
-  256 MiB steps.
+  requested exactly as the model assumes. Growth lags allocation, and a
+  process that allocates faster than the plug can keep up is OOM-killed by
+  the guest kernel well under the ceiling (the first deep-research box died
+  on its first allocation, though no kernel log was captured then). A
+  follow-up reproduced the kill with `dmesg` proof at 6 and 12 GiB on a
+  16 GiB box; see [docs/sailbox-oom.md](docs/sailbox-oom.md). The
+  simulator's bounded ramp (`mem_ramp_gb_per_sec`) is the right shape, but
+  it does not model that failure mode. The workload now grows in 256 MiB
+  steps, which the report confirms keeps the plug in pace.
 - **Ramp rate.** At 60 s resolution (the finest the 6h metrics window
   gives) a 1.7–1.9 GiB allocation completes within one sample, so the real
   ramp is at least 0.03 GB/s and consistent with the 0.5 GB/s default; the

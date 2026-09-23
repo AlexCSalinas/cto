@@ -12,8 +12,9 @@ can be lined up with the platform's metrics afterwards.
 Two lessons from the first run are baked in:
 
 - Memory is grown in steps with short pauses. The guest's memory is
-  hot-plugged on demand and a single large allocation can outrun it; the
-  first deep-research box was OOM-killed inside the guest 62 s in.
+  hot-plugged on demand and an allocation faster than the plug is
+  OOM-killed inside the guest, well under the ceiling. Stepping keeps the
+  plug in pace; see docs/sailbox-oom.md for the reproduction.
 - Waits default to a wall-clock alarm (timerfd on CLOCK_REALTIME_ALARM)
   instead of time.sleep(). Sail's autosleep treats "a process waiting on a
   timer" as not idle, so time.sleep() kept the first boxes awake and billed
