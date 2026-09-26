@@ -1,0 +1,21 @@
+--- meminfo now
+MemTotal:        4256532 kB
+MemAvailable:    4139712 kB
+--- kills
+[   37.956606] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/,task=python3,pid=197,uid=0
+[   37.956651] Out of memory: Killed process 197 (python3) total-vm:6379564kB, anon-rss:1973624kB, file-rss:0kB, shmem-rss:0kB, UID:0 pgtables:3932kB oom_score_adj:0
+[  182.004541] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/,task=python3,pid=219,uid=0
+[  182.004586] Out of memory: Killed process 219 (python3) total-vm:6379564kB, anon-rss:4146664kB, file-rss:0kB, shmem-rss:0kB, UID:0 pgtables:8196kB oom_score_adj:0
+--- virtio_mem tail
+[   82.853880] virtio_mem virtio3: plugged size: 0x0
+[   82.853917] virtio_mem virtio3: requested size: 0xe8000000
+[   98.830362] virtio_mem virtio3: plugged size: 0xe8000000
+[   98.830408] virtio_mem virtio3: requested size: 0x1e0000000
+[  102.827713] virtio_mem virtio3: plugged size: 0x1e0000000
+[  102.827719] virtio_mem virtio3: requested size: 0x160000000
+[  122.828905] virtio_mem virtio3: plugged size: 0x160000000
+[  122.828937] virtio_mem virtio3: requested size: 0xe0000000
+[  138.830279] virtio_mem virtio3: plugged size: 0xe0000000
+[  138.830294] virtio_mem virtio3: requested size: 0x88000000
+--- uptime
+196.91 158.84

@@ -216,7 +216,8 @@ spend for the exercise was $1.00. What was measured, and what it changes:
   the guest kernel well under the ceiling (the first deep-research box died
   on its first allocation, though no kernel log was captured then). A
   follow-up reproduced the kill with `dmesg` proof at 6 and 12 GiB on a
-  16 GiB box; see [docs/sailbox-oom.md](docs/sailbox-oom.md). The
+  16 GiB box, and a second fresh box on 2026-09-26 died at 1.9 GiB with
+  nothing plugged yet; see [docs/sailbox-oom.md](docs/sailbox-oom.md). The
   simulator's bounded ramp (`mem_ramp_gb_per_sec`) is the right shape, but
   it does not model that failure mode. The workload now grows in 256 MiB
   steps, which the report confirms keeps the plug in pace.

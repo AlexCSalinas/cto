@@ -1,0 +1,14 @@
+--- meminfo now
+MemTotal:        5698324 kB
+MemAvailable:    5548408 kB
+--- virtio_mem events since boot line 8
+[   82.853880] virtio_mem virtio3: plugged size: 0x0
+[   82.853917] virtio_mem virtio3: requested size: 0xe8000000
+[   98.830362] virtio_mem virtio3: plugged size: 0xe8000000
+[   98.830408] virtio_mem virtio3: requested size: 0x1e0000000
+[  102.827713] virtio_mem virtio3: plugged size: 0x1e0000000
+[  102.827719] virtio_mem virtio3: requested size: 0x160000000
+[  122.828905] virtio_mem virtio3: plugged size: 0x160000000
+[  122.828937] virtio_mem virtio3: requested size: 0xe0000000
+--- any new oom
+1

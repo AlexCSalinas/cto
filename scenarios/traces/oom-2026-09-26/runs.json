@@ -1,0 +1,26 @@
+{
+ "sailbox_id": "sb_d20536f4-b0a7-4812-a77c-6c1ad3661e00",
+ "app": "cto",
+ "size": "s",
+ "ceiling_gib": 16,
+ "date": "2026-09-26",
+ "runs": [
+  {"order": 1, "mode": "single", "requested_gib": 6, "memtotal_start_gib": 1.934,
+   "result": "killed", "exit": 137, "anon_rss_kib_at_kill": 1973624, "uptime_s_at_kill": 37.96,
+   "log": "single-6gib-fresh.log", "dmesg": "dmesg-after-single-fresh.txt"},
+  {"order": 2, "mode": "stepped", "requested_gib": 6, "memtotal_start_gib": 1.934,
+   "result": "completed", "exit": 0, "memtotal_end_gib": 9.434, "duration_s": 25.7,
+   "log": "stepped-6gib.log", "dmesg": "dmesg-after-stepped.txt"},
+  {"order": 3, "mode": "single", "requested_gib": 6, "memtotal_start_gib": 4.059,
+   "result": "killed", "exit": 137, "anon_rss_kib_at_kill": 4146664, "uptime_s_at_kill": 182.0,
+   "log": "single-6gib-grown.log", "dmesg": "dmesg-after-single-grown.txt"}
+ ],
+ "virtio_mem_events": [
+  {"uptime_s": 0.34,   "plugged": "0x0",         "requested": "0x0"},
+  {"uptime_s": 82.85,  "plugged": "0x0",         "requested": "0xe8000000"},
+  {"uptime_s": 98.83,  "plugged": "0xe8000000",  "requested": "0x1e0000000"},
+  {"uptime_s": 102.83, "plugged": "0x1e0000000", "requested": "0x160000000"},
+  {"uptime_s": 122.83, "plugged": "0x160000000", "requested": "0xe0000000"},
+  {"uptime_s": 138.83, "plugged": "0xe0000000",  "requested": "0x88000000"}
+ ]
+}
